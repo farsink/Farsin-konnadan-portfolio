@@ -41,7 +41,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const spansRef = useRef<(HTMLSpanElement | null)[]>([]);
   const theme = useTheme();
-
+  const lastInteractionRef = useRef(performance.now());
   const mouseRef = useRef({ x: 0, y: 0 });
   const cursorRef = useRef({ x: 0, y: 0 });
 
@@ -56,12 +56,13 @@ const TextPressure: React.FC<TextPressureProps> = ({
     const dy = b.y - a.y;
     return Math.sqrt(dx * dx + dy * dy);
   };
- const defaultRegion = {
-   x: 200, // starting x coordinate
-   y: 100, // starting y coordinate
-   width: 200, // width of the region
-   height: 200, // height of the region
- };
+  const defaultRegion = {
+    x: 200, // starting x coordinate
+    y: 100, // starting y coordinate
+    width: 200, // width of the region
+    height: 200, // height of the region
+  };
+
   // Added function to apply default effect
   const applyDefaultEffect = () => {
     if (titleRef.current) {
@@ -77,32 +78,32 @@ const TextPressure: React.FC<TextPressureProps> = ({
           y: rect.y + rect.height / 2,
         };
 
-          if (
-            charCenter.x >= defaultRegion.x &&
-            charCenter.x <= defaultRegion.x + defaultRegion.width &&
-            charCenter.y >= defaultRegion.y &&
-            charCenter.y <= defaultRegion.y + defaultRegion.height
-          ) {
-            const d = dist(mouseRef.current, charCenter);
+        if (
+          charCenter.x >= defaultRegion.x &&
+          charCenter.x <= defaultRegion.x + defaultRegion.width &&
+          charCenter.y >= defaultRegion.y &&
+          charCenter.y <= defaultRegion.y + defaultRegion.height
+        ) {
+          const d = dist(mouseRef.current, charCenter);
 
-            const getAttr = (
-              distance: number,
-              minVal: number,
-              maxVal: number
-            ) => {
-              const val = maxVal - Math.abs((maxVal * distance) / maxDist);
-              return Math.max(minVal, val + minVal);
-            };
+          const getAttr = (
+            distance: number,
+            minVal: number,
+            maxVal: number
+          ) => {
+            const val = maxVal - Math.abs((maxVal * distance) / maxDist);
+            return Math.max(minVal, val + minVal);
+          };
 
-            const wdth = width ? Math.floor(getAttr(d, 5, 200)) : 100;
-            const wght = weight ? Math.floor(getAttr(d, 100, 900)) : 400;
-            const italVal = italic ? getAttr(d, 0, 1).toFixed(2) : "0";
-            const alphaVal = alpha ? getAttr(d, 0, 1).toFixed(2) : "1";
+          const wdth = width ? Math.floor(getAttr(d, 5, 200)) : 100;
+          const wght = weight ? Math.floor(getAttr(d, 100, 900)) : 400;
+          const italVal = italic ? getAttr(d, 0, 1).toFixed(2) : "0";
+          const alphaVal = alpha ? getAttr(d, 0, 1).toFixed(2) : "1";
 
-            span.style.opacity = alphaVal;
-            span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
-          } 
-        });
+          span.style.opacity = alphaVal;
+          span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+        }
+      });
     }
   };
 
@@ -110,11 +111,13 @@ const TextPressure: React.FC<TextPressureProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       cursorRef.current.x = e.clientX;
       cursorRef.current.y = e.clientY;
+      lastInteractionRef.current = performance.now();
     };
     const handleTouchMove = (e: TouchEvent) => {
       const t = e.touches[0];
       cursorRef.current.x = t.clientX;
       cursorRef.current.y = t.clientY;
+      lastInteractionRef.current = performance.now();
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -171,7 +174,11 @@ const TextPressure: React.FC<TextPressureProps> = ({
 
   useEffect(() => {
     let rafId: number;
+
     const animate = () => {
+      const currentTime = performance.now();
+      const isIdle = currentTime - lastInteractionRef.current > 2000; // 2s delay
+
       mouseRef.current.x += (cursorRef.current.x - mouseRef.current.x) / 15;
       mouseRef.current.y += (cursorRef.current.y - mouseRef.current.y) / 15;
 
@@ -179,33 +186,46 @@ const TextPressure: React.FC<TextPressureProps> = ({
         const titleRect = titleRef.current.getBoundingClientRect();
         const maxDist = titleRect.width / 2;
 
-        spansRef.current.forEach((span) => {
+        spansRef.current.forEach((span, index) => {
           if (!span) return;
 
-          const rect = span.getBoundingClientRect();
-          const charCenter = {
-            x: rect.x + rect.width / 2,
-            y: rect.y + rect.height / 2,
-          };
+          if (isIdle) {
+            const idleTime = currentTime - (lastInteractionRef.current + 2000);
+            const wave = Math.sin(idleTime * 0.0001 + index * 0.3) * 0.3 + 0.5; // Wave effect
 
-          const d = dist(mouseRef.current, charCenter);
+            const wdth = 50 + wave * 150; // 50-200
+            const wght = 100 + wave * 400; // 400-600
+            const italVal = (wave * 0.5).toFixed(2); // Subtle italic
+            const alphaVal = (0.8 + wave * 0.2).toFixed(2); // 80-100% opacity
 
-          const getAttr = (
-            distance: number,
-            minVal: number,
-            maxVal: number
-          ) => {
-            const val = maxVal - Math.abs((maxVal * distance) / maxDist);
-            return Math.max(minVal, val + minVal);
-          };
+            span.style.opacity = alphaVal;
+            span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+          } else {
+            const rect = span.getBoundingClientRect();
+            const charCenter = {
+              x: rect.x + rect.width / 2,
+              y: rect.y + rect.height / 2,
+            };
 
-          const wdth = width ? Math.floor(getAttr(d, 5, 200)) : 100;
-          const wght = weight ? Math.floor(getAttr(d, 100, 900)) : 400;
-          const italVal = italic ? getAttr(d, 0, 1).toFixed(2) : "0";
-          const alphaVal = alpha ? getAttr(d, 0, 1).toFixed(2) : "1";
+            const d = dist(mouseRef.current, charCenter);
 
-          span.style.opacity = alphaVal;
-          span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+            const getAttr = (
+              distance: number,
+              minVal: number,
+              maxVal: number
+            ) => {
+              const val = maxVal - Math.abs((maxVal * distance) / maxDist);
+              return Math.max(minVal, val + minVal);
+            };
+
+            const wdth = width ? Math.floor(getAttr(d, 5, 200)) : 100;
+            const wght = weight ? Math.floor(getAttr(d, 100, 900)) : 400;
+            const italVal = italic ? getAttr(d, 0, 1).toFixed(2) : "0";
+            const alphaVal = alpha ? getAttr(d, 0, 1).toFixed(2) : "1";
+
+            span.style.opacity = alphaVal;
+            span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+          }
         });
       }
 
@@ -213,7 +233,9 @@ const TextPressure: React.FC<TextPressureProps> = ({
     };
 
     animate();
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
   }, [width, weight, italic, alpha, chars.length]);
 
   return (
