@@ -82,6 +82,18 @@ export const DATA = {
 
   work: [
     {
+      company: "Rearway Technologies",
+      href: "https://www.rearway.com/",
+      badges: ["node.js", "express.js", "flutter","react"],
+      location: "Manjeri, India",
+      title: "Backend Developer Intern",
+      logoUrl: "https://www.rearway.com/assets/Rearway-B7lO62KJ.png",
+      start: "May 2025",
+      end: "Present",
+      description:
+        "As a Backend Developer Intern, I contributed to the development of the 'Deal Buddy' product, focusing on backend services and APIs. I also assisted with various tasks and services across other projects, gaining experience in Node.js, Express.js, and AWS environments.",
+    },
+    {
       company: "Luminar Technolab",
       href: "https://www.luminartechnolab.com/",
       badges: [],
@@ -93,18 +105,6 @@ export const DATA = {
       end: "Jan 2025",
       description:
         "Developed a full-stack web application designed for football tournament management. It integrates fixture scheduling, player bidding, live streaming, ticket sales, and news updates. A secure bidding and ticketing system—powered by Stripe—processed over $50K in sales with a 98% success rate. Developed with React.js, Node.js, Express, and MongoDB, it also leverages YouTube Live and Twitch APIs along with n8n ai-agents for automation ",
-    },
-    {
-      company: "Rearway Technologies",
-      href: "https://www.rearway.com/",
-      badges: ["node.js", "express.js", "Flutter", "AWS", "React"],
-      location: "Manjeri, India",
-      title: "Backend Developer Intern",
-      logoUrl: "https://www.rearway.com/assets/Rearway-B7lO62KJ.png",
-      start: "May 2025",
-      end: "Present",
-      description:
-        "As a Backend Developer Intern, I contributed to the development of the 'Deal Buddy' product, focusing on backend services and APIs. I also assisted with various tasks and services across other projects, gaining experience in Node.js, Express.js, and AWS environments.",
     },
   ],
   education: [
