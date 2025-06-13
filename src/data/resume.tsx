@@ -84,7 +84,7 @@ export const DATA = {
     {
       company: "Rearway Technologies",
       href: "https://www.rearway.com/",
-      badges: ["node.js", "express.js", "flutter","react"],
+      badges: [],
       location: "Manjeri, India",
       title: "Backend Developer Intern",
       logoUrl: "https://www.rearway.com/assets/Rearway-B7lO62KJ.png",
